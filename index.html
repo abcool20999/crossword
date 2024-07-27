@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossword</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        table {
+            border: 1px solid black;
+        }
+
+        th {
+            width: 50px;
+            height: 50px;
+            background: #ffbd59;
+            border: 1px solid black;
+            position: relative;
+        }
+
+        .b {
+            background: black;
+            cursor: not-allowed;
+        }
+
+        .w {
+            background: white;
+
+        }
+
+        .w:hover {
+            background: #0fc0fc
+        }
+
+        th span {
+            font-size: 17px;
+            position: absolute;
+            top: 4px;
+            left: 4px;
+        }
+
+        th b {
+            font-size: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <table id="table" cellspacing="0">
+        <tr>
+            <th row="0" col="0"><input type="text" maxlength="1"></th>
+            <th row="0" col="1"><input type="text" maxlength="1"></th>
+            <!-- more cells -->
+        </tr>
+        <tr>
+            <th row="1" col="0" class="b"><input type="text" maxlength="1"></th>
+            <th row="1" col="1"><input type="text" maxlength="1"></th>
+            <!-- more cells -->
+        </tr>
+        <!-- more rows -->
+
+
+    </table>
+</body>
+
+<script>
+
+    //w - white
+    //b - black
+
+    var values = ["bbbbbbwbbwwwwwbbbbb", "bbbbbbwbbbbbwbbbbbb", "bbbbwwwwwwwwwwbbbbb", "bbbbbbwbbbbbwbbbbbb", "bbbbbbwbwwwwwbbwbbb", "bbbbbbwbwbbbwbbwbbb", "bbbbbbwbwbbbwbbwbbb", "bbbbbbwbbbbwwwwwwww", "wwwwwwwwwbbbwbbwbbb", "bbbbbbwbbbbbbbbwbbb", "bbbbbbwbbbbbbbbwbbb", "bbbbbbwbbbbbbbbwbbb", "bbbwwwwwwwbbbbbwbbb", "bbbbbbwbbbbbbbbwbbb"];
+    var total_rows = values.length;
+    var total_cols = values[0].length;
+    var spans_value = { "0,6": "1", "2,4": "4", "8,0": "8", "12,3": "9", "0,9": "2", "0,12": "3", "4,8": "5", "7,11": "7", "4,15": "6" };
+    var current = null;
+
+
+    function createFrameBoxes() {
+        var boxes = "";
+        for (let i = 0; i < values.length; i++) { //2
+            boxes += "<tr>";
+            for (let j = 0; j < values[i].length; j++) { //13
+                var s = spans_value[i + "," + j] ?? "";
+                boxes += `<th onclick='myclick(this)'row='${i}' col='${j}' class="${values[i][j]}"><span>${s}</span><b></b></th>`;
+
+            }
+            boxes += "</tr>";
+        }
+        document.getElementById("table").innerHTML = boxes;
+
+    }
+
+    createFrameBoxes();
+    //sets the current cell to a color and highlights it
+    function myclick(box) {
+        if (box.classList.contains("w")) {
+            if (current != null) {
+                current.style.background = "w";
+            }
+            current = box;
+            box.style.background = "#ffbd59";
+            current.focus();
+        }
+    }
+
+    //this function helps in typing of letters
+    document.body.onkeyup = function (event) {
+        if (current != null) {
+            if (event.keyCode >= 37 && event.keyCode <= 40) {
+                nextmover(event.keyCode);
+            } else if (event.keyCode >= 65 && event.keyCode <= 90) { // A-Z keys
+                current.querySelector("b").innerHTML = event.key.toUpperCase();
+            } else if (event.keyCode === 8) { // Backspace key
+                current.querySelector("b").innerHTML = "";
+            }
+        }
+    }
+
+    //This function helps to move between the cells
+    function nextmover(code) {
+        var row = parseInt(current.getAttribute("row"));
+        var col = parseInt(current.getAttribute("col")); // Corrected spelling here
+
+        switch (code) {
+            case 37: // left arrow
+                col = col === 0 ? total_cols - 1 : col - 1;
+                break;
+            case 38: // up arrow
+                row = row === 0 ? total_rows - 1 : row - 1;
+                break;
+            case 39: // right arrow
+                col = col === total_cols - 1 ? 0 : col + 1;
+                break;
+            case 40: // down arrow
+                row = row === total_rows - 1 ? 0 : row + 1;
+                break;
+            default:
+                break;
+        }
+
+        // Handle black cells
+        var nextCell = document.querySelectorAll("tr")[row].querySelectorAll("th")[col];
+        if (nextCell.classList.contains("b")) {
+            nextmover(code); // Recursively move to the next cell if current is black
+        } else {
+            current.style.background = "transparent"; // Remove previous highlight
+            current = nextCell;
+            current.style.background = "orange"; // Highlight new cell
+
+            current.querySelector("b").focus(); // Focus the input field
+        }
+    }
+
+</script>
+
+</html>
